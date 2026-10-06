@@ -1,0 +1,8 @@
+ktp-cases — Kinetic Trust Protocol conformance case sets
+Copyright 2025-2026 Chris Perkins.
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+These case sets test the Kinetic Trust Protocol, published by NMCITRA under
+the Apache License 2.0: https://github.com/nmcitra/ktp-rfc
+Canonical citation: https://github.com/nmcitra/ktp-rfc/blob/main/CITATION.cff

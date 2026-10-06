@@ -1,0 +1,11 @@
+# Claims, per the Commons EVIDENCE-MODEL.md: one per real assertion, each with a state.
+# Evidence has to match the size of the claim.
+claims:
+  - id: ktp-cases-publishes-case-sets
+    statement: >
+      This repository publishes KTP conformance case sets, each carrying a status label that only moves forward by PR with evidence attached, and never issues a conformance claim on an implementation's behalf.
+    state: SELF_ASSERTED
+    evidence: []
+    would_become_DOCUMENTED_when: the first tagged release exists with its case set and status block
+    would_become_REPRODUCIBLE_when: an implementation outside this repository runs a published case set and publishes the run
+    would_become_INDEPENDENTLY_TESTED_when: a party who fails none of EVIDENCE-MODEL.md's independence tests (not the maintainer) runs a published case set and publishes the run

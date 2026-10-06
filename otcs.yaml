@@ -1,0 +1,62 @@
+# Open Trust Commons manifest — owner-hosted (PARTICIPATION.md path A).
+# The registry fetches this file from this repository. Facts here are the
+# project's own description of itself; scores are per EVIDENCE-MODEL.md.
+otcs_version: "0.1"
+project:
+  id: ktp-cases
+  name: ktp-cases — KTP conformance case sets
+  canonical_url: https://github.com/nmcitra/ktp-cases
+  status: research
+  first_public_date: "2026-10-05"
+  current_version: pre-release
+  license: Apache-2.0
+  record_state: unregistered   # becomes `registered` through a Commons proposal after the first tag
+  maintainers:
+    - name: Chris Perkins (nmcitra)
+      representative: true
+declaration:
+  problem: >
+    State, as cases an outside observer can check, what an implementation of the Kinetic Trust Protocol has to get right, and record which of those cases have been run, by whom, and whether the runner was independent.
+  governed_object: [action, environment]
+  primary_users: [implementers, independent evaluators]
+  threat_or_failure_model: >
+    A requirement is asserted but never tested; a test passes on the gate's own records rather than on the world; a maintainer's run is mistaken for independent evidence; a label advances because time passed.
+  decision_outputs: []
+  evidence_outputs: [case sets with status labels, published runs by PR]
+  known_limitations: >
+    Pre-release. No case set has been run. No runner. No independent evaluation.
+coordinates:
+  actor: { ai_agent: 1.0, service: 0.9, delegated_subagent: 0.7, human: 0.2 }
+  authority: [mandate, capability, delegation, situational_approval]
+  action: [execute, transfer, commit]
+  environment: [system_health, reversibility, cumulative_trajectory, downstream_capacity]
+  time: [initiation, commit_point, after_action]
+functions: { interpret: 0.1, constrain: 0.2, decide: 0.0, record: 0.9 }
+ownership:
+  # Filled by the owner in their own commit at registration.
+  owners: []
+  hosted_by: Chris Perkins (nmcitra)
+  verification:
+    status: unverified
+    verified_at: null
+    evidence: []
+    verified_by: null
+freshness:
+  review_interval_days: 365
+  next_owner_confirmation: null
+  confirmation_status: PENDING
+consent:
+  # Filled by the owner in their own commit at registration.
+  publication: null
+  metadata_use: null
+  history_preservation: null
+  mapping_and_analysis: null
+  public_correction_process: null
+  consented_at: null
+evidence: { specification: 1, implementation: 0, independent_validation: 0 }
+offers: [published conformance case sets, status labels that move only by evidence]
+needs: [an implementation that runs a case set and publishes the run, an independent reproduction]
+implements:
+  - project: ktp
+    reference: https://github.com/nmcitra/ktp-rfc
+    pinned_release: null   # the KTP release the first tagged case set tests
