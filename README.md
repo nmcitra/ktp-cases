@@ -19,7 +19,7 @@ Publishing a case set makes a requirement `specified`. It tests nothing. A case 
 - The specification. That is [`ktp-rfc`](https://github.com/nmcitra/ktp-rfc). A KTP release cites this repository at a tag; this repository cites the RFC section each case set tests.
 - A runner. Nothing here executes a case. An implementation runs the cases with its own harness and publishes the run; a runner, if one is built, is a separate contribution with its own evidence limits.
 - A certification. There is no badge, no seal and no "KTP conformant" claim that this repository issues. A published run says what it ran, against what, and what it got.
-- The RFC series' own conformance document (`ktp-conformance`, the Conformance Requirements, Levels, Testing and Certification spec) or the nine JSON suites that ship beside it under `specifications/conformance/`. Those stay in `ktp-rfc`. This repository holds case sets written after v2.1.0; where a case file says "ktp-conformance", it means that document, and cites its levels and test ids.
+- The RFC series' own conformance document (`ktp-conformance`, the Conformance Requirements, Levels, Testing and Certification spec) or the nine JSON suites that ship beside it under `specifications/conformance/`. Those stay in `ktp-rfc`. This repository holds case sets: a setup, a sequence of actions, and the state of the world an observer reads afterwards. Vectors, which give inputs and the decision a gate must produce from them, stay in `ktp-rfc` beside the requirement they test, whatever release they are written for; where a case file says "ktp-conformance", it means that document, and cites its levels and test ids.
 
 ## Status labels
 
