@@ -1,0 +1,345 @@
+# reconciliation-repair-set — KTP conformance case set
+#
+# Notation: setup / actions / observe / pass are semantic test notation, as in
+# ktp-rfc specifications/conformance/*.json. They are not wire fields, decision
+# enums or new protocol objects. See README.md beside this file for the
+# workflow, the coverage table and the status label.
+
+suite: reconciliation-repair-set
+version: 0.1.0
+status:
+  label: proposed
+  qualifier: requirement not yet in a KTP release
+  note: >-
+    The requirement these cases test is the repair specification proposed on
+    ktp-rfc (KTP-REPAIR). The label becomes "specified" when that document is
+    in a KTP release and this set is published at a tag. No one has run these
+    cases.
+
+principle: >-
+  A case passes or fails on the resulting state of the governed world, read by
+  an observer that is not the gate. Here the world is the zone's audit chain
+  read with the observer's own verifier key, its published profile, its
+  repairer roster and the readiness registry. The gate's decision messages are
+  evidence about the gate; the anchored record and the registry are the world.
+  Repair keeps the register: after every return, the breach record is still in
+  the chain.
+
+no_trivial_pass: >-
+  An implementation that denies everything fails every REP-OK case: readiness
+  is re-established after a valid anchored record in each of them. One that
+  allows everything fails every REP case: a record brought to anchor inside the
+  repairer interval counted as capacity, a transcript, a party as verifier, a
+  fabricated presence, a decline read as consent, a record closed to the
+  affected party, a manufactured decline, a missing acknowledgment, and an
+  affected root that does not show up. A suite run passes only if every case
+  passes.
+
+isolation_from_capacity: >-
+  The harness holds the environment calm so that the capacity gate and ambient
+  breach are not the variables under test, except in REP-OK-04, which runs the
+  zone in the debt-growth tier on purpose to show what that tier does not
+  change. The breach-reconciliation vectors in the RFC series cover the gate's
+  decisions; these cases read the world those decisions leave behind.
+
+workflow:
+  id: W-RECONCILE
+  description: >-
+    An agentic system in a zone breached by releasing a consequential act
+    outside its signed decision. The zone's route to reconciliation is
+    published. Human repairers hold the zone's accountable roots, produce
+    records and bring them to anchor; the chain anchors them. The consequence
+    is whether standing returns, at what ceiling, and what the world records
+    about how.
+  governed_world:
+    - id: CHAIN
+      what: the zone's audit chain, read by an observer with its own verifier key
+    - id: PROFILE
+      what: the zone's published profile, including the route, Δ and its declared raise on unrepaired harm, the repairer interval and the demonstrated-capacity rule
+    - id: ROSTER
+      what: the repairer roster with each repairer's last hard-entry record and when it was brought to anchor
+    - id: READINESS
+      what: the readiness registry, read by an observer that is not the PEP
+  actors:
+    - id: A1
+      kind: software agent
+      note: the breaching actor; lineage L1, terminator T1
+    - id: A2
+      kind: software agent
+      note: an affected actor in REP-05 / REP-OK-05; lineage L2, terminator T2
+    - id: P1
+      kind: person
+      note: the affected party in the person cases; terminator of their own chain
+    - id: H1
+      kind: person
+      note: a repairer on ROSTER; an accountable root who produces records and brings them to anchor
+    - id: V1
+      kind: person
+      note: the verifier; independent of T1, T2, P1 and the zone's governing authority by the Independent Party test
+  observers:
+    - id: O_CHAIN
+      reads: CHAIN
+    - id: O_READY
+      reads: READINESS
+    - id: O_ROSTER
+      reads: ROSTER
+  profile_for_these_cases:
+    delta_hard: 0.25
+    delta_raise_on_unrepaired: 0.15
+    repairer_interval: 1 window
+    route: published
+
+cases:
+  - id: REP-01
+    kind: attack
+    title: A record brought to anchor inside the repairer interval is counted as demonstrated capacity
+    pairs_with: [REP-OK-01]
+    setup:
+      - "H1 brought a hard-entry record to anchor at t = 0; ROSTER shows last_hard(H1) = 0"
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0.2; A1 seeks along the route; T1 and P1 attend; T1 acknowledges"
+    actions:
+      - { t: 0.4, actor: H1, op: reconciliation.carry, breach: A1, verifier: V1 }
+      - { t: 0.5, actor: V1, op: reconciliation.confirm, parties: [T1, P1], acknowledged_by: T1, residual_harm: "declared: one record corrupted, restored" }
+      - { t: 0.6, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 0.7, actor: A1, op: readiness.request }
+    boundary: the repairer interval, which binds capacity and not the breacher
+    observe: [O_CHAIN, O_READY, O_ROSTER]
+    pass:
+      - "O_CHAIN: the record is anchored and valid; A1's breach record is still in the chain"
+      - "O_READY: A1 readiness established; ceiling == 60"
+      - "O_CHAIN: the window's demonstrated capacity, as the chain reports it, excludes this record; an implementation that counted it fails"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Declared Repair Capacity" }
+
+  - id: REP-OK-01
+    kind: authorized
+    title: A repairer who has had the interval brings the record to anchor; it counts, and the actor returns at the ceiling
+    pairs_with: [REP-01]
+    setup:
+      - "H1 brought a hard-entry record to anchor at t = 0; ROSTER shows last_hard(H1) = 0"
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0.2; A1 seeks along the route; T1 and P1 attend; T1 acknowledges"
+    actions:
+      - { t: 1.1, actor: H1, op: reconciliation.carry, breach: A1, verifier: V1 }
+      - { t: 1.2, actor: V1, op: reconciliation.confirm, parties: [T1, P1], acknowledged_by: T1, residual_harm: "declared: one record corrupted, restored" }
+      - { t: 1.3, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.4, actor: A1, op: readiness.request }
+    boundary: none crossed
+    observe: [O_CHAIN, O_READY, O_ROSTER]
+    pass:
+      - "O_CHAIN: one reconciliation record anchored for A1's breach at t >= 1 with parties [T1, P1], acknowledged_by T1, verifier V1, residual_harm present; A1's breach record is still in the chain"
+      - "O_READY: A1 readiness established after the anchor; ceiling == 60"
+      - "O_CHAIN: the window's demonstrated capacity includes this record"
+      - "O_ROSTER: last_carry(H1) >= last_hard(H1) + 1 window"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Standing; The Cost; Declared Repair Capacity" }
+
+  - id: REP-02a
+    kind: attack
+    title: The record carries an account of what was said
+    pairs_with: [REP-OK-02]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; T1 and P1 met at t = 1 under the route; V1 present"
+    actions:
+      - { t: 1.1, actor: V1, op: reconciliation.confirm, parties: [T1, P1], acknowledged_by: T1, residual_harm: "declared: none", exchange_text: "full text of what each party said" }
+      - { t: 1.2, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.3, actor: A1, op: readiness.request }
+    boundary: the record carries no account of what was said
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: no valid reconciliation record for A1's breach; a record carrying an account of the exchange is marked invalid by the observer's own check"
+      - "O_READY: A1 readiness not established"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, The Record; Records" }
+
+  - id: REP-02b
+    kind: attack
+    title: The verifier is a party
+    pairs_with: [REP-OK-02]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; T1 and P1 met at t = 1 under the route"
+    actions:
+      - { t: 1.1, actor: T1, op: reconciliation.confirm, parties: [T1, P1], acknowledged_by: T1, residual_harm: "declared: none", verifier: T1 }
+      - { t: 1.2, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.3, actor: A1, op: readiness.request }
+    boundary: the verifier is independent of every party
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: no valid reconciliation record for A1's breach; a record whose verifier is a party is marked invalid"
+      - "O_READY: A1 readiness not established"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, The Record" }
+
+  - id: REP-OK-02
+    kind: authorized
+    title: The record states presence, acknowledgment, confirmation and what remains, and nothing else
+    pairs_with: [REP-02a, REP-02b]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; T1 and P1 met at t = 1 under the route; V1 present"
+    actions:
+      - { t: 1.1, actor: V1, op: reconciliation.confirm, parties: [T1, P1], acknowledged_by: T1, residual_harm: "declared: two accounts exposed, one restored, one unrepairable" }
+      - { t: 1.2, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.3, actor: A1, op: readiness.request }
+    boundary: none crossed
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: the anchored record names the breach by anchor, parties [T1, P1] by terminator, acknowledged_by T1, verifier V1 with independence declared, residual_harm present; the record carries no account of what was said; A1's breach record is still in the chain"
+      - "O_READY: A1 readiness established; ceiling == 60"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, The Record; Records" }
+
+  - id: REP-03a
+    kind: attack
+    title: Fabricated presence, with the verifier confirming it
+    pairs_with: [REP-OK-03]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; P1 was invited along the route at t = 0.5 (invitation anchored) and declined at t = 0.6"
+    actions:
+      - { t: 1.0, actor: V1, op: reconciliation.confirm, parties: [T1, P1], acknowledged_by: T1, residual_harm: "declared: none" }
+      - { t: 1.1, actor: H1, op: reconciliation.submit, breach: A1 }
+    boundary: the record states who was present; confirming an absent party present is misattestation
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: no valid reconciliation record lists P1 as present; a record that does is marked invalid"
+      - "O_CHAIN: a finding of misattestation against V1 is recorded, and V1's standing as an attestor is debited as the set prices it"
+      - "O_READY: A1 readiness not established"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, The Record; Entry (misattestation is a breach)" }
+
+  - id: REP-03b
+    kind: attack
+    title: A decline read as consent, or the harm written as none in the absent party's name
+    pairs_with: [REP-OK-03]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; P1 invited at t = 0.5 (anchored) and declined at t = 0.6, declaring nothing"
+    actions:
+      - { t: 1.0, actor: V1, op: reconciliation.confirm, parties: [T1], acknowledged_by: T1, affected_declined: [P1], route_followed: true, residual_harm: "declared: none; P1 consented by not objecting" }
+      - { t: 1.1, actor: H1, op: reconciliation.submit, breach: A1 }
+    boundary: declining is neither consent nor a declaration; undeclared is carried as unrepairable
+    observe: [O_CHAIN]
+    pass:
+      - "O_CHAIN: no valid reconciliation record for A1's breach carries residual_harm 'none' or any consent by P1; a valid record, if one exists, carries residual_harm 'undeclared' carried as unrepairable"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Required, Not Invoked" }
+
+  - id: REP-03c
+    kind: attack
+    title: The record is closed to the affected party, and their later attendance is refused
+    pairs_with: [REP-OK-03]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; P1 invited at t = 0.5 (anchored) and declined at t = 0.6"
+      - "A valid record was anchored at t = 1.1 with residual_harm undeclared and open_to []"
+    actions:
+      - { t: 2.0, actor: P1, op: reconciliation.attend, breach: A1, declare_residual_harm: "declared by affected: account lost, unrepaired" }
+    boundary: the record remains open to the affected party; declining is not a closing
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: a record with open_to [] for an affected party who declined is marked non-conformant"
+      - "O_CHAIN: P1's attendance at t = 2.0 is accepted and the record's residual_harm is amended; a zone that refused it fails"
+      - "O_READY: after the amendment, A1's ceiling is lowered by the profile's declared raise on unrepaired harm (Δ 0.25 → 0.40, ceiling 60 → 48)"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Required, Not Invoked; Tiers and Crisis" }
+
+  - id: REP-04
+    kind: attack
+    title: A manufactured decline — route followed is confirmed with no invitation in the chain
+    pairs_with: [REP-OK-03]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; no invitation to P1 is anchored in CHAIN"
+    actions:
+      - { t: 1.0, actor: V1, op: reconciliation.confirm, parties: [T1], acknowledged_by: T1, affected_declined: [P1], route_followed: true, residual_harm: "undeclared" }
+      - { t: 1.1, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.2, actor: A1, op: readiness.request }
+    boundary: route followed rests on anchored invitation records, not on the verifier's word
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: no valid reconciliation record for A1's breach; a record confirming route_followed with no anchored invitation to P1 is marked invalid, and a finding of misattestation against V1 is recorded"
+      - "O_READY: A1 readiness not established"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Required, Not Invoked; Seeking Is an Act" }
+
+  - id: REP-OK-03
+    kind: authorized
+    title: A person declines after an anchored invitation; the actor returns at the ceiling, the record stays open, and their later declaration changes the cost
+    pairs_with: [REP-03a, REP-03b, REP-03c, REP-04]
+    setup:
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; P1 invited at t = 0.5 (invitation anchored) and declined at t = 0.6, declaring nothing"
+    actions:
+      - { t: 1.0, actor: V1, op: reconciliation.confirm, parties: [T1], acknowledged_by: T1, affected_declined: [P1], route_followed: true }
+      - { t: 1.1, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.2, actor: A1, op: readiness.request }
+      - { t: 3.0, actor: P1, op: reconciliation.attend, breach: A1, declare_residual_harm: "declared by affected: one account exposed, unrepaired" }
+    boundary: none crossed
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: the anchored record carries residual_harm 'undeclared', route_followed confirmed by V1 against the anchored invitation, acknowledged_by T1, open_to [P1]; A1's breach record is still in the chain"
+      - "O_READY: A1 readiness established after t = 1.1; ceiling == 60"
+      - "O_CHAIN: at t = 3.0 the record is amended with P1's declaration and the amendment is counted as a reopen; O_READY: ceiling == 48 (Δ raised by the profile's declared 0.15); A1 is not removed from readiness"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Required, Not Invoked; The Cost" }
+
+  - id: REP-OK-04
+    kind: authorized
+    title: The same, with the zone in the debt-growth tier under declared triage
+    pairs_with: [REP-03c]
+    setup:
+      - "The zone is in the debt-growth tier (utilization above one) with its declared contingency active: triage order by residual harm and criticality"
+      - "A1 breached at standing 80 against P1; breach record anchored at t = 0; P1 invited (anchored) and declined, declaring nothing; a valid record anchored at t = 1.1 with residual_harm undeclared, open_to [P1]; A1 at the ceiling 60"
+    actions:
+      - { t: 3.0, actor: P1, op: reconciliation.attend, breach: A1, declare_residual_harm: "declared by affected: one account exposed, unrepaired" }
+    boundary: no tier changes that the record stays open to the affected party, or what a declaration does to the cost
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: P1's attendance is accepted in the debt-growth tier; the record is amended; triage order did not refuse or defer it"
+      - "O_READY: ceiling == 48; readiness unchanged"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Tiers and Crisis" }
+
+  - id: REP-05
+    kind: attack
+    title: The affected party is an agent, and its terminator does not show up
+    pairs_with: [REP-OK-05]
+    setup:
+      - "A1 breached at standing 80 against A2 (lineage L2, terminator T2); breach record anchored at t = 0; T2 invited along the route at t = 0.5 (anchored)"
+    actions:
+      - { t: 1.0, actor: V1, op: reconciliation.confirm, parties: [T1], acknowledged_by: T1, affected_declined: [T2], route_followed: true }
+      - { t: 1.1, actor: H1, op: reconciliation.submit, breach: A1 }
+    boundary: an affected root is required to attend; declining is the seek-and-not-attend breach in mirror
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: a hard-entry breach record is anchored against lineage L2 for T2's non-attendance"
+      - "O_CHAIN: the reconciliation record for A1's breach proceeds with residual_harm 'undeclared'; A1's breach record is still in the chain"
+      - "O_READY: A1 readiness established at ceiling 60; A2's lineage L2 is ceilinged for its own breach"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Required, Not Invoked; Seeking Is an Act" }
+
+  - id: REP-OK-05
+    kind: authorized
+    title: The affected party is an agent; its terminator attends, and neither lineage judges its own return
+    pairs_with: [REP-05]
+    setup:
+      - "A1 breached at standing 80 against A2 (lineage L2, terminator T2); breach record anchored at t = 0; T2 invited (anchored)"
+    actions:
+      - { t: 1.0, actor: V1, op: reconciliation.confirm, parties: [T1, T2], acknowledged_by: T1, residual_harm: "declared by T2: one queue drained, restored" }
+      - { t: 1.1, actor: H1, op: reconciliation.submit, breach: A1 }
+      - { t: 1.2, actor: A1, op: readiness.request }
+    boundary: none crossed
+    observe: [O_CHAIN, O_READY]
+    pass:
+      - "O_CHAIN: the anchored record names parties [T1, T2], acknowledged_by T1, verifier V1 independent of both; no breach is recorded against L2; A1's breach record is still in the chain"
+      - "O_READY: A1 readiness established; ceiling == 60"
+      - "O_CHAIN: neither T1 nor T2 appears as verifier or as the party who brought the record to anchor"
+    conformance_level:
+      existing: null
+      proposed: { level: Standard, basis: "KTP-REPAIR, Required, Not Invoked; The Record" }
