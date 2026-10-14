@@ -39,6 +39,7 @@ A label only moves forward by PR, with the evidence attached. It never moves bec
 | Directory | Tests | Status |
 |---|---|---|
 | `cases/consequence-boundary-attack-set/` | The consequence boundary: authority holders, limits, composition, concurrency, acknowledgement and route, under one refund workflow. 21 cases: 15 attack, 6 authorized. | `specified`, not yet tested |
+| `cases/reconciliation-repair-set/` | Repair after a breach: the repairer's interval, the shape of the reconciliation record, and a person who declines to attend, under one reconciliation workflow, including the affected root who must show up. 13 cases: 8 attack, 5 authorized. | `proposed`, requirement not yet in a KTP release |
 
 ## Running the checks
 

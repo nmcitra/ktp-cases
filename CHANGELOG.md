@@ -4,5 +4,6 @@ All notable changes, newest first. A release PR renames `Unreleased` to the vers
 
 ## Unreleased
 
+- Second case set: `reconciliation-repair-set`, 13 cases (8 attack, 5 authorized), status `proposed`; tests the KTP-REPAIR proposal on ktp-rfc.
 - First case set: `consequence-boundary-attack-set`, 21 cases (15 attack, 6 authorized), status `specified`, not yet tested.
 - Repository scaffold: governance, contributing rules, hygiene and structure checks.
